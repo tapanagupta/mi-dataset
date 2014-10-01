@@ -1,0 +1,8 @@
+driver_metadata:
+  author: Tapana Gupta
+  constructor: CtdbpCdefCeDataSetDriver
+  driver_name: ctdbp_cdef_ce
+  driver_path: "ctdbp_cdef/ce"
+  email: Tapana_Gupta@raytheon.com
+  release_notes: Initial Release
+  version: 0.0.1
