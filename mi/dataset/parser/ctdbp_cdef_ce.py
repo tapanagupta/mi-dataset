@@ -32,6 +32,7 @@ START_METADATA = r'\*'
 
 HEX_DATA_36 = r'([0-9A-F]{36})'
 
+# Regex for data particle class
 DATA_REGEX = r'([0-9A-F]{6})([0-9A-F]{6})([0-9A-F]{6})([0-9A-F]{4})([0-9A-F]{6})([0-9A-F]{8})'
 DATA_MATCHER = re.compile(DATA_REGEX, re.DOTALL)
 
@@ -80,6 +81,10 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
         Take recovered Hex raw data and extract different fields, converting Hex to Integer values.
         @throws SampleException If there is a problem with sample creation
         """
+
+        log.debug('***************************')
+        log.debug('Raw Data: %s', self.raw_data)
+
         match = DATA_MATCHER.match(self.raw_data)
         if not match:
             raise SampleException("CtdParserDataParticle: No regex match of \
@@ -92,6 +97,13 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
             press_temp = int(match.group(4), 16)
             o2 = int(match.group(5), 16)
             ctd_time = int(match.group(6), 16)
+
+            # log.debug('Temp: %s', temp)
+            # log.debug('Cond: %s', cond)
+            # log.debug('Press: %s', press)
+            # log.debug('Press Temp: %s', press_temp)
+            # log.debug('O2: %s', o2)
+            # log.debug('Time: %s', ctd_time)
 
         except (ValueError, TypeError, IndexError) as ex:
             raise SampleException("Error (%s) while decoding parameters in data: [%s]"
@@ -110,6 +122,9 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
                   {DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.CTD_TIME,
                    DataParticleKey.VALUE: ctd_time}]
         log.debug('CtdbpCdefCeInstrumentDataParticle: particle=%s', result)
+
+        log.debug('***************************')
+
         return result
 
 
@@ -189,17 +204,26 @@ class CtdbpCdefCeParser(BufferLoadingParser):
         self.handle_non_data(non_data, non_end, start)
 
         while chunk is not None:
+
+            log.debug("CHUNK: %s", chunk)
             self._increment_position(len(chunk))
 
             # If this is a valid sensor data record,
             # use the extracted fields to generate a particle.
 
             sensor_match = SENSOR_DATA_MATCHER.match(chunk)
+
             if sensor_match is not None:
+
+                log.debug("Sensor match found!")
+
                 particle = self._extract_sample(self.particle_class,
                                                 None,
-                                                sensor_match.groups(),
+                                                chunk,
                                                 None)
+
+                log.debug("GOT PARTICLE!!!")
+
                 if particle is not None:
                     result_particles.append((particle, copy.copy(self._read_state)))
 
@@ -211,6 +235,8 @@ class CtdbpCdefCeParser(BufferLoadingParser):
                 # Otherwise generate warning for unknown data.
 
                 meta_match = METADATA_MATCHER.match(chunk)
+
+                log.debug("Meta match: %s", str(meta_match))
                 if meta_match is None:
                     error_message = 'Unknown data found in chunk %s' % chunk
                     log.warn(error_message)
