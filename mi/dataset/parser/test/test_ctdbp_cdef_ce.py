@@ -26,7 +26,14 @@ RAW_INPUT_DATA_1 = "raw_input1.log"
 
 OUTPUT_HEX_FILE = "hex_data.log"
 
+DATA_FILE_1 = "data1.log"
+YAML_FILE = "data1.yml"
+
 NUM_REC_SIMPLE_LOG_FILE = 5
+NUM_REC_DATA_FILE1 = 143
+
+INVALID_DATA_FILE = "invalid_data.log"
+NUM_INVALID_EXCEPTIONS = 7
 
 
 @attr('UNIT', group='mi')
@@ -103,7 +110,7 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         Read data from a file and pull out data particles
         one at a time. Verify that the results are those we expected.
         """
-        log.debug('===== START SIMPLE TEST =====')
+        log.debug('===== START META TEST =====')
         in_file = self.open_file(SIMPLE_LOG_FILE_META)
         parser = self.create_rec_parser(in_file)
 
@@ -115,9 +122,53 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         in_file.close()
         self.assertEqual(self.rec_exception_callback_value, None)
 
-        log.debug('===== END SIMPLE TEST =====')
+        log.debug('===== END META TEST =====')
 
-    def create_hex_data_from_log_file(self):
+    def test_verify_record_against_yaml(self):
+        """
+        Read data from a file and pull out data particles
+        one at a time. Verify that the results are those we expected.
+        """
+        log.debug('===== START YAML TEST =====')
+        in_file = self.open_file(DATA_FILE_1)
+        parser = self.create_rec_parser(in_file)
+
+        # In a single read, get all particles in this file.
+        number_expected_results = NUM_REC_DATA_FILE1
+        result = parser.get_records(number_expected_results)
+        self.assert_particles(result, YAML_FILE, RESOURCE_PATH)
+
+        in_file.close()
+        self.assertEqual(self.rec_exception_callback_value, None)
+
+        log.debug('===== END YAML TEST =====')
+
+
+    def test_invalid_sensor_data_records(self):
+        """
+        Read data from a file containing invalid sensor data records.
+        Verify that no instrument particles are produced
+        and the correct number of exceptions are detected.
+        """
+        log.debug('===== START TEST INVALID SENSOR DATA =====')
+        in_file = self.open_file(INVALID_DATA_FILE)
+        parser = self.create_rec_parser(in_file)
+
+        # Try to get records and verify that none are returned.
+        result = parser.get_records(1)
+        self.assertEqual(result, [])
+        self.assertEqual(self.rec_exceptions_detected, NUM_INVALID_EXCEPTIONS)
+
+        in_file.close()
+
+        log.debug('===== END TEST INVALID SENSOR DATA =====')
+
+
+    # This is not really a test. This is a little module to read in a log file, and extract fields from the data,
+    # converting Hex values to Integers. It writes the converted data to a log file, in a format that can be easily
+    # imported into a spreadsheet where the data is then converted to yaml format.
+    # The reason for including this here is that data validation is also being performed.
+    def convert_hex_data_from_log_file(self):
         in_file = self.open_file(RAW_INPUT_DATA_1)
         out_file = self.open_file_write(OUTPUT_HEX_FILE)
 
