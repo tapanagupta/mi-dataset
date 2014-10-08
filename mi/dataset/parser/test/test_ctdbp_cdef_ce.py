@@ -23,36 +23,33 @@ MODULE_NAME = 'mi.dataset.parser.ctdbp_cdef_ce'
 
 SIMPLE_LOG_FILE = "simple_test.log"
 SIMPLE_LOG_FILE_META = "simple_test_meta.log"
-
 RAW_INPUT_DATA_1 = "raw_input1.log"
-
 EXTRACTED_DATA_FILE = "extracted_data.log"
-EXTRACTED_DOSTA_FILE = "extracted_dosta.log"
-
+INVALID_DATA_FILE = "invalid_data.log"
+NO_SENSOR_DATA_FILE = "no_sensor_data.log"
+RECORDS_FILE_24  = "data2.log"
+RECORDS_FILE_20  = "data3.log"
 DATA_FILE_1 = "data1.log"
-YAML_FILE = "data1.yml"
 
+# Define number of expected records/exceptions for various tests
 NUM_REC_SIMPLE_LOG_FILE = 5
 NUM_REC_DATA_FILE1 = 286
-
-INVALID_DATA_FILE = "invalid_data.log"
+NUM_REC_MID_START = 20
+NUM_REC_SET_STATE = 10
 NUM_INVALID_EXCEPTIONS = 7
 
-NO_SENSOR_DATA_FILE = "no_sensor_data.log"
-
-RECORDS_FILE_24  = "data2.log"
+YAML_FILE = "data1.yml"
 YAML_FILE_MID_START = "data_mid.yml"
-
-NUM_REC_MID_START = 20
-
-RECORDS_FILE_20  = "data3.log"
-NUM_REC_SET_STATE = 10
 YAML_FILE_SET_STATE1= "data_set_state1.yml"
 YAML_FILE_SET_STATE2= "data_set_state2.yml"
 YAML_FILE_SET_STATE3= "data_set_state3.yml"
 
+
 @attr('UNIT', group='mi')
 class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
+    """
+    ctdbp_cdef_ce Parser unit test suite
+    """
 
     def setUp(self):
         ParserUnitTestCase.setUp(self)
@@ -103,8 +100,7 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
 
     def test_verify_record(self):
         """
-        Read data from a file and pull out data particles
-        one at a time. Verify that the results are those we expected.
+        Simple test to verify that records are successfully read and parsed from a data file
         """
         log.debug('===== START SIMPLE TEST =====')
         in_file = self.open_file(SIMPLE_LOG_FILE)
@@ -122,8 +118,7 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
 
     def test_verify_record_with_metadata(self):
         """
-        Read data from a file and pull out data particles
-        one at a time. Verify that the results are those we expected.
+        Test that metadata lines are ignored and data particles are generated for all records
         """
         log.debug('===== START META TEST =====')
         in_file = self.open_file(SIMPLE_LOG_FILE_META)
@@ -292,9 +287,10 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
                 cond = str(int(match.group(2), 16))
                 press = str(int(match.group(3), 16))
                 press_temp = str(int(match.group(4), 16))
+                oxygen = str(int(match.group(5), 16))
                 ctd_time = str(int(match.group(6), 16))
 
-                outline = temp + ' ' + cond + ' ' + press + ' ' + press_temp + ' ' + ctd_time + '\n'
+                outline = temp + ' ' + cond + ' ' + press + ' ' + press_temp + ' ' + oxygen + ' ' + ctd_time + '\n'
 
                 out_file.write(outline)
 

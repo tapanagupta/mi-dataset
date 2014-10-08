@@ -1,0 +1,80 @@
+header:
+  particle_object: MULTIPLE
+  particle_type: MULTIPLE
+
+data:
+  - _index:  1
+    particle_object: CtdbpCdefCeInstrumentDataParticle
+    particle_type: ctdbp_cdef_ce_instrument_recovered
+    temperature: 233527
+    conductivity: 681842
+    pressure: 529991
+    pressure_temp: 26045
+    ctd_time: 463864200
+    internal_timestamp: 3619537800
+  - _index:  3
+    particle_object: CtdbpCdefCeInstrumentDataParticle
+    particle_type: ctdbp_cdef_ce_instrument_recovered
+    temperature: 233529
+    conductivity: 681842
+    pressure: 529989
+    pressure_temp: 26062
+    ctd_time: 463864211
+    internal_timestamp: 3619537811
+  - _index:  5
+    particle_object: CtdbpCdefCeInstrumentDataParticle
+    particle_type: ctdbp_cdef_ce_instrument_recovered
+    temperature: 233534
+    conductivity: 681841
+    pressure: 529992
+    pressure_temp: 26074
+    ctd_time: 463864222
+    internal_timestamp: 3619537822
+  - _index:  7
+    particle_object: CtdbpCdefCeInstrumentDataParticle
+    particle_type: ctdbp_cdef_ce_instrument_recovered
+    temperature: 233531
+    conductivity: 681842
+    pressure: 529990
+    pressure_temp: 26064
+    ctd_time: 463864233
+    internal_timestamp: 3619537833
+  - _index:  9
+    particle_object: CtdbpCdefCeInstrumentDataParticle
+    particle_type: ctdbp_cdef_ce_instrument_recovered
+    temperature: 233539
+    conductivity: 681842
+    pressure: 529992
+    pressure_temp: 26049
+    ctd_time: 463864244
+    internal_timestamp: 3619537844
+  - _index:  2
+    particle_object: CtdbpCdefCeDostaDataParticle
+    particle_type: ctdbp_cdef_ce_dosta_recovered
+    oxygen: 2775560
+    ctd_time: 463864200
+    internal_timestamp: 3619537800
+  - _index:  4
+    particle_object: CtdbpCdefCeDostaDataParticle
+    particle_type: ctdbp_cdef_ce_dosta_recovered
+    oxygen: 2776340
+    ctd_time: 463864211
+    internal_timestamp: 3619537811
+  - _index:  6
+    particle_object: CtdbpCdefCeDostaDataParticle
+    particle_type: ctdbp_cdef_ce_dosta_recovered
+    oxygen: 2776920
+    ctd_time: 463864222
+    internal_timestamp: 3619537822
+  - _index:  8
+    particle_object: CtdbpCdefCeDostaDataParticle
+    particle_type: ctdbp_cdef_ce_dosta_recovered
+    oxygen: 2775390
+    ctd_time: 463864233
+    internal_timestamp: 3619537833
+  - _index:  10
+    particle_object: CtdbpCdefCeDostaDataParticle
+    particle_type: ctdbp_cdef_ce_dosta_recovered
+    oxygen: 2775130
+    ctd_time: 463864244
+    internal_timestamp: 3619537844

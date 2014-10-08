@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+"""
+@package mi.dataset.parser.ctdbp_cdef_ce
+@file marine-integrations/mi/dataset/parser/ctdbp_cdef_ce.py
+@author Tapana Gupta
+@brief Parser for the ctdbp_cdef_ce dataset driver
+
+This file contains code for the ctdbp_cdef_ce parsers and code to produce data particles.
+This parser is for recovered data.
+
+"""
 
 __author__ = 'tgupta'
 __license__ = 'Apache 2.0'
@@ -8,8 +18,6 @@ import copy
 import calendar
 from functools import partial
 import re
-
-
 
 from mi.core.instrument.chunker import \
     StringChunker
@@ -23,8 +31,7 @@ from mi.core.exceptions import \
 
 from mi.core.instrument.data_particle import \
     DataParticle, \
-    DataParticleKey, \
-    DataParticleValue
+    DataParticleKey
 
 from mi.dataset.dataset_parser import BufferLoadingParser
 
@@ -32,8 +39,10 @@ from mi.dataset.dataset_parser import BufferLoadingParser
 ANY_CHARS = r'.*'          # Any characters excluding a newline
 NEW_LINE = r'(?:\r\n|\n)'  # any type of new line
 
+# regex for identifying start of a metadata line
 START_METADATA = r'\*'
 
+# Regex for identifying a single record of instrument data (36 Hex characters)
 HEX_DATA_36 = r'([0-9A-F]{36})'
 
 # Regex for data particle class
@@ -44,7 +53,6 @@ DATA_MATCHER = re.compile(DATA_REGEX, re.DOTALL)
 CTDBP_RECORD_PATTERN = ANY_CHARS       # Any number of ASCII characters
 CTDBP_RECORD_PATTERN += NEW_LINE       # separated by a new line
 CTDBP_RECORD_MATCHER = re.compile(CTDBP_RECORD_PATTERN)
-
 
 # Metadata record:
 METADATA_PATTERN = START_METADATA    # Metadata record starts with '*'
@@ -61,10 +69,16 @@ SENSOR_DATA_PATTERN = HEX_DATA_36 + NEW_LINE
 SENSOR_DATA_MATCHER = re.compile(SENSOR_DATA_PATTERN)
 
 class DataParticleType(BaseEnum):
+    """
+    Class that defines the two data particles generated from the ctdbp_cdef_ce recovered data
+    """
     SAMPLE = 'ctdbp_cdef_ce_instrument_recovered'
     DOSTA = 'ctdbp_cdef_ce_dosta_recovered'
 
 class CtdpfParserDataParticleKey(BaseEnum):
+    """
+    Class that defines fields that need to be extracted from the data
+    """
     TEMPERATURE = "temperature"
     CONDUCTIVITY = "conductivity"
     PRESSURE = "pressure"
@@ -78,7 +92,7 @@ class CtdbpStateKey(BaseEnum):
 
 class CtdbpCdefCeInstrumentDataParticle(DataParticle):
     """
-    Class for generating the Flort_dj instrument particle.
+    Class for generating the ctdbp_cdef_ce_instrument_recovered data particle.
     """
 
     _data_particle_type = DataParticleType.SAMPLE
@@ -89,9 +103,10 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
         @throws SampleException If there is a problem with sample creation
         """
 
-        log.debug('***************************')
+        #log.debug('***************************')
         #log.debug('Raw Data: %s', self.raw_data)
 
+        # the data contains seconds since Jan 1, 2000. Need the number of seconds before that
         SECONDS_TILL_JAN_1_2000 = calendar.timegm(JAN_1_2000)
 
         match = DATA_MATCHER.match(self.raw_data)
@@ -117,6 +132,7 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
             raise SampleException("Error (%s) while decoding parameters in data: [%s]"
                                   % (ex, self.raw_data))
 
+        # calculate the internal timestamp
         elapsed_seconds = SECONDS_TILL_JAN_1_2000 + ctd_time
         self.set_internal_timestamp(unix_time=elapsed_seconds)
 
@@ -132,14 +148,14 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
                    DataParticleKey.VALUE: ctd_time}]
         log.debug('CtdbpCdefCeInstrumentDataParticle: particle=%s', result)
 
-        log.debug('***************************')
+        #log.debug('***************************')
 
         return result
 
 
 class CtdbpCdefCeDostaDataParticle(DataParticle):
     """
-    Class for generating the Flort_dj instrument particle.
+    Class for generating the ctdbp_cdef_ce_dosta_recovered data particle.
     """
 
     _data_particle_type = DataParticleType.DOSTA
@@ -150,9 +166,10 @@ class CtdbpCdefCeDostaDataParticle(DataParticle):
         @throws SampleException If there is a problem with sample creation
         """
 
-        log.debug('***************************')
+        #log.debug('***************************')
         #log.debug('Raw Data: %s', self.raw_data)
 
+        # the data contains seconds since Jan 1, 2000. Need the number of seconds before that
         SECONDS_TILL_JAN_1_2000 = calendar.timegm(JAN_1_2000)
 
         match = DATA_MATCHER.match(self.raw_data)
@@ -171,6 +188,7 @@ class CtdbpCdefCeDostaDataParticle(DataParticle):
             raise SampleException("Error (%s) while decoding parameters in data: [%s]"
                                   % (ex, self.raw_data))
 
+        # calculate the internal timestamp
         elapsed_seconds = SECONDS_TILL_JAN_1_2000 + ctd_time
         self.set_internal_timestamp(unix_time=elapsed_seconds)
 
@@ -180,7 +198,7 @@ class CtdbpCdefCeDostaDataParticle(DataParticle):
                    DataParticleKey.VALUE: ctd_time}]
         log.debug('CtdbpCdefCeDostaDataParticle: particle=%s', result)
 
-        log.debug('***************************')
+        #log.debug('***************************')
 
         return result
 
@@ -262,34 +280,36 @@ class CtdbpCdefCeParser(BufferLoadingParser):
 
         while chunk is not None:
 
-            log.debug("CHUNK: %s", chunk)
+            #log.debug("CHUNK: %s", chunk)
             self._increment_position(len(chunk))
 
             # If this is a valid sensor data record,
-            # use the extracted fields to generate a particle.
+            # use the extracted fields to generate data particles.
 
             sensor_match = SENSOR_DATA_MATCHER.match(chunk)
 
             if sensor_match is not None:
 
-                log.debug("Sensor match found!")
+                #log.debug("Sensor match found!")
 
+                # First extract the ctdbp_cdef_ce_instrument_recovered particle
                 self.particle_class = CtdbpCdefCeInstrumentDataParticle
                 data_particle = self._extract_sample(self.particle_class,
                                                 None,
                                                 chunk,
                                                 None)
-                log.debug("GOT DATA PARTICLE!!!")
+                #log.debug("GOT DATA PARTICLE!!!")
 
                 if data_particle is not None:
                     result_particles.append((data_particle, copy.copy(self._read_state)))
 
+                # Then extract the ctdbp_cdef_ce_dosta_recovered particle
                 self.particle_class = CtdbpCdefCeDostaDataParticle
                 dosta_particle = self._extract_sample(self.particle_class,
                                                 None,
                                                 chunk,
                                                 None)
-                log.debug("GOT DOSTA PARTICLE!!!")
+                #log.debug("GOT DOSTA PARTICLE!!!")
 
                 if dosta_particle is not None:
                     result_particles.append((dosta_particle, copy.copy(self._read_state)))
