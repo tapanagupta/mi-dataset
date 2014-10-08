@@ -10,6 +10,8 @@ from mi.dataset.parser.ctdbp_cdef_ce import CtdbpCdefCeParser
 from mi.dataset.parser.ctdbp_cdef_ce import CtdbpCdefCeInstrumentDataParticle
 
 from mi.dataset.parser.ctdbp_cdef_ce import  DATA_MATCHER
+from mi.dataset.parser.ctdbp_cdef_ce import  CtdbpStateKey
+
 from mi.idk.config import Config
 
 from mi.core.exceptions import SampleException
@@ -24,17 +26,30 @@ SIMPLE_LOG_FILE_META = "simple_test_meta.log"
 
 RAW_INPUT_DATA_1 = "raw_input1.log"
 
-OUTPUT_HEX_FILE = "hex_data.log"
+EXTRACTED_DATA_FILE = "extracted_data.log"
+EXTRACTED_DOSTA_FILE = "extracted_dosta.log"
 
 DATA_FILE_1 = "data1.log"
 YAML_FILE = "data1.yml"
 
 NUM_REC_SIMPLE_LOG_FILE = 5
-NUM_REC_DATA_FILE1 = 143
+NUM_REC_DATA_FILE1 = 286
 
 INVALID_DATA_FILE = "invalid_data.log"
 NUM_INVALID_EXCEPTIONS = 7
 
+NO_SENSOR_DATA_FILE = "no_sensor_data.log"
+
+RECORDS_FILE_24  = "data2.log"
+YAML_FILE_MID_START = "data_mid.yml"
+
+NUM_REC_MID_START = 20
+
+RECORDS_FILE_20  = "data3.log"
+NUM_REC_SET_STATE = 10
+YAML_FILE_SET_STATE1= "data_set_state1.yml"
+YAML_FILE_SET_STATE2= "data_set_state2.yml"
+YAML_FILE_SET_STATE3= "data_set_state3.yml"
 
 @attr('UNIT', group='mi')
 class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
@@ -164,13 +179,106 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         log.debug('===== END TEST INVALID SENSOR DATA =====')
 
 
+    def test_no_sensor_data(self):
+        """
+        Read a file containing no sensor data records
+        and verify that no particles are produced.
+        """
+        log.debug('===== START TEST NO SENSOR DATA RECOVERED =====')
+        in_file = self.open_file(NO_SENSOR_DATA_FILE)
+        parser = self.create_rec_parser(in_file)
+
+        # Try to get a record and verify that none are produced.
+        result = parser.get_records(1)
+        self.assertEqual(result, [])
+
+        self.assertEqual(self.rec_exception_callback_value, None)
+        in_file.close()
+
+        log.debug('===== END TEST NO SENSOR DATA =====')
+
+
+    def test_mid_state_start(self):
+        """
+        Test starting a parser with a state in the middle of processing.
+        """
+        log.debug('===== START TEST MID-STATE START RECOVERED =====')
+
+        in_file = self.open_file(RECORDS_FILE_24)
+
+        # Start at the beginning of record 15 (of 40 total)
+        initial_state = {
+            CtdbpStateKey.POSITION: 679
+        }
+
+        parser = self.create_rec_parser(in_file, new_state=initial_state)
+
+        # In a single read, get all particles in this file.
+        number_expected_results = NUM_REC_MID_START
+        result = parser.get_records(number_expected_results)
+        self.assert_particles(result, YAML_FILE_MID_START, RESOURCE_PATH)
+
+        self.assertEqual(self.rec_exception_callback_value, None)
+        in_file.close()
+
+        log.debug('===== END TEST MID-STATE START RECOVERED =====')
+
+
+    def test_set_state(self):
+        """
+        This test verifies that the state can be changed after starting.
+        Some particles are read and then the parser state is modified to
+        skip ahead or back.
+        """
+        log.debug('===== START TEST SET STATE RECOVERED =====')
+
+        in_file = self.open_file(RECORDS_FILE_20)
+        parser = self.create_rec_parser(in_file)
+
+        # Get the first 5 particles in this file
+        number_expected_results = NUM_REC_SET_STATE
+        result = parser.get_records(number_expected_results)
+        self.assert_particles(result, YAML_FILE_SET_STATE1, RESOURCE_PATH)
+
+        # Skip ahead in the file so that we get the last 5 particles.
+        new_state = {
+            CtdbpStateKey.POSITION: 555
+        }
+
+        # Set the state.
+        parser.set_state(new_state)
+
+        # Read and verify the last 5 particles.
+        number_expected_results = NUM_REC_SET_STATE
+        result = parser.get_records(number_expected_results)
+        self.assert_particles(result, YAML_FILE_SET_STATE2, RESOURCE_PATH)
+
+        # Skip back in the file so that we get 5 particles prior to the last 5.
+        new_state = {
+            CtdbpStateKey.POSITION: 370
+        }
+
+        # Set the state.
+        parser.set_state(new_state)
+
+        # Read and verify 5 particles.
+        number_expected_results = NUM_REC_SET_STATE
+        result = parser.get_records(number_expected_results)
+        self.assert_particles(result, YAML_FILE_SET_STATE3, RESOURCE_PATH)
+
+        self.assertEqual(self.rec_exception_callback_value, None)
+        in_file.close()
+
+        log.debug('===== END TEST SET STATE RECOVERED =====')
+
+
     # This is not really a test. This is a little module to read in a log file, and extract fields from the data,
     # converting Hex values to Integers. It writes the converted data to a log file, in a format that can be easily
     # imported into a spreadsheet where the data is then converted to yaml format.
     # The reason for including this here is that data validation is also being performed.
-    def convert_hex_data_from_log_file(self):
+    def extract_data_particle_from_log_file(self):
         in_file = self.open_file(RAW_INPUT_DATA_1)
-        out_file = self.open_file_write(OUTPUT_HEX_FILE)
+        out_file = self.open_file_write(EXTRACTED_DATA_FILE)
 
         for line in in_file:
 
@@ -184,10 +292,9 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
                 cond = str(int(match.group(2), 16))
                 press = str(int(match.group(3), 16))
                 press_temp = str(int(match.group(4), 16))
-                o2 = str(int(match.group(5), 16))
                 ctd_time = str(int(match.group(6), 16))
 
-                outline = temp + ' ' + cond + ' ' + press + ' ' + press_temp + ' ' + o2 + ' ' + ctd_time + '\n'
+                outline = temp + ' ' + cond + ' ' + press + ' ' + press_temp + ' ' + ctd_time + '\n'
 
                 out_file.write(outline)
 

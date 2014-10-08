@@ -5,8 +5,11 @@ __author__ = 'tgupta'
 __license__ = 'Apache 2.0'
 
 import copy
+import calendar
 from functools import partial
 import re
+
+
 
 from mi.core.instrument.chunker import \
     StringChunker
@@ -20,7 +23,8 @@ from mi.core.exceptions import \
 
 from mi.core.instrument.data_particle import \
     DataParticle, \
-    DataParticleKey
+    DataParticleKey, \
+    DataParticleValue
 
 from mi.dataset.dataset_parser import BufferLoadingParser
 
@@ -48,6 +52,8 @@ METADATA_PATTERN += ANY_CHARS         # followed by text
 METADATA_PATTERN += NEW_LINE         # followed by newline
 METADATA_MATCHER = re.compile(METADATA_PATTERN)
 
+# Time tuple corresponding to January 1st, 2000
+JAN_1_2000 = (2000, 1, 1, 0, 0, 0, 0, 0, 0)
 
 # Sensor data record:
 #  (36 Hex Characters followed by new line)
@@ -56,6 +62,7 @@ SENSOR_DATA_MATCHER = re.compile(SENSOR_DATA_PATTERN)
 
 class DataParticleType(BaseEnum):
     SAMPLE = 'ctdbp_cdef_ce_instrument_recovered'
+    DOSTA = 'ctdbp_cdef_ce_dosta_recovered'
 
 class CtdpfParserDataParticleKey(BaseEnum):
     TEMPERATURE = "temperature"
@@ -83,11 +90,13 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
         """
 
         log.debug('***************************')
-        log.debug('Raw Data: %s', self.raw_data)
+        #log.debug('Raw Data: %s', self.raw_data)
+
+        SECONDS_TILL_JAN_1_2000 = calendar.timegm(JAN_1_2000)
 
         match = DATA_MATCHER.match(self.raw_data)
         if not match:
-            raise SampleException("CtdParserDataParticle: No regex match of \
+            raise SampleException("CtdbpCdefCeInstrumentDataParticle: No regex match of \
                                   parsed sample data: [%s]", self.raw_data)
         try:
             # grab Hex values, convert to int
@@ -95,7 +104,6 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
             cond = int(match.group(2), 16)
             press = int(match.group(3), 16)
             press_temp = int(match.group(4), 16)
-            o2 = int(match.group(5), 16)
             ctd_time = int(match.group(6), 16)
 
             # log.debug('Temp: %s', temp)
@@ -109,6 +117,9 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
             raise SampleException("Error (%s) while decoding parameters in data: [%s]"
                                   % (ex, self.raw_data))
 
+        elapsed_seconds = SECONDS_TILL_JAN_1_2000 + ctd_time
+        self.set_internal_timestamp(unix_time=elapsed_seconds)
+
         result = [{DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.TEMPERATURE,
                    DataParticleKey.VALUE: temp},
                   {DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.CONDUCTIVITY,
@@ -117,11 +128,57 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
                    DataParticleKey.VALUE: press},
                   {DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.PRESSURE_TEMP,
                    DataParticleKey.VALUE: press_temp},
-                  {DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.OXYGEN,
-                   DataParticleKey.VALUE: o2},
                   {DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.CTD_TIME,
                    DataParticleKey.VALUE: ctd_time}]
         log.debug('CtdbpCdefCeInstrumentDataParticle: particle=%s', result)
+
+        log.debug('***************************')
+
+        return result
+
+
+class CtdbpCdefCeDostaDataParticle(DataParticle):
+    """
+    Class for generating the Flort_dj instrument particle.
+    """
+
+    _data_particle_type = DataParticleType.DOSTA
+
+    def _build_parsed_values(self):
+        """
+        Take recovered Hex raw data and extract different fields, converting Hex to Integer values.
+        @throws SampleException If there is a problem with sample creation
+        """
+
+        log.debug('***************************')
+        #log.debug('Raw Data: %s', self.raw_data)
+
+        SECONDS_TILL_JAN_1_2000 = calendar.timegm(JAN_1_2000)
+
+        match = DATA_MATCHER.match(self.raw_data)
+        if not match:
+            raise SampleException("CtdbpCdefCeDostaDataParticle: No regex match of \
+                                  parsed sample data: [%s]", self.raw_data)
+        try:
+            # grab Hex values, convert to int
+            o2 = int(match.group(5), 16)
+            ctd_time = int(match.group(6), 16)
+
+            # log.debug('O2: %s', o2)
+            # log.debug('Time: %s', ctd_time)
+
+        except (ValueError, TypeError, IndexError) as ex:
+            raise SampleException("Error (%s) while decoding parameters in data: [%s]"
+                                  % (ex, self.raw_data))
+
+        elapsed_seconds = SECONDS_TILL_JAN_1_2000 + ctd_time
+        self.set_internal_timestamp(unix_time=elapsed_seconds)
+
+        result = [{DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.OXYGEN,
+                   DataParticleKey.VALUE: o2},
+                  {DataParticleKey.VALUE_ID: CtdpfParserDataParticleKey.CTD_TIME,
+                   DataParticleKey.VALUE: ctd_time}]
+        log.debug('CtdbpCdefCeDostaDataParticle: particle=%s', result)
 
         log.debug('***************************')
 
@@ -217,18 +274,27 @@ class CtdbpCdefCeParser(BufferLoadingParser):
 
                 log.debug("Sensor match found!")
 
-                particle = self._extract_sample(self.particle_class,
+                self.particle_class = CtdbpCdefCeInstrumentDataParticle
+                data_particle = self._extract_sample(self.particle_class,
                                                 None,
                                                 chunk,
                                                 None)
+                log.debug("GOT DATA PARTICLE!!!")
 
-                log.debug("GOT PARTICLE!!!")
+                if data_particle is not None:
+                    result_particles.append((data_particle, copy.copy(self._read_state)))
 
-                if particle is not None:
-                    result_particles.append((particle, copy.copy(self._read_state)))
+                self.particle_class = CtdbpCdefCeDostaDataParticle
+                dosta_particle = self._extract_sample(self.particle_class,
+                                                None,
+                                                chunk,
+                                                None)
+                log.debug("GOT DOSTA PARTICLE!!!")
+
+                if dosta_particle is not None:
+                    result_particles.append((dosta_particle, copy.copy(self._read_state)))
 
             # It's not a sensor data record, see if it's a metadata record.
-
             else:
 
                 # If it's a valid metadata record, ignore it.
