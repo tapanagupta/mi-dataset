@@ -125,7 +125,6 @@ class CtdbpCdefCeInstrumentDataParticle(DataParticle):
             # log.debug('Cond: %s', cond)
             # log.debug('Press: %s', press)
             # log.debug('Press Temp: %s', press_temp)
-            # log.debug('O2: %s', o2)
             # log.debug('Time: %s', ctd_time)
 
         except (ValueError, TypeError, IndexError) as ex:
