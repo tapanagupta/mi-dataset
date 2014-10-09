@@ -201,7 +201,7 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
 
         in_file = self.open_file(RECORDS_FILE_24)
 
-        # Start at the beginning of record 15 (of 40 total)
+        # Start at the beginning of record 15 (of 24 total)
         initial_state = {
             CtdbpStateKey.POSITION: 679
         }
@@ -230,12 +230,12 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         in_file = self.open_file(RECORDS_FILE_20)
         parser = self.create_rec_parser(in_file)
 
-        # Get the first 5 particles in this file
+        # Get the first 5 records (10 particles) in this file
         number_expected_results = NUM_REC_SET_STATE
         result = parser.get_records(number_expected_results)
         self.assert_particles(result, YAML_FILE_SET_STATE1, RESOURCE_PATH)
 
-        # Skip ahead in the file so that we get the last 5 particles.
+        # Skip ahead in the file so that we get the last 5 records.
         new_state = {
             CtdbpStateKey.POSITION: 555
         }
@@ -243,12 +243,12 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         # Set the state.
         parser.set_state(new_state)
 
-        # Read and verify the last 5 particles.
+        # Read and verify the last 5 records (10 particles).
         number_expected_results = NUM_REC_SET_STATE
         result = parser.get_records(number_expected_results)
         self.assert_particles(result, YAML_FILE_SET_STATE2, RESOURCE_PATH)
 
-        # Skip back in the file so that we get 5 particles prior to the last 5.
+        # Skip back in the file so that we get 5 records prior to the last 5.
         new_state = {
             CtdbpStateKey.POSITION: 370
         }
@@ -256,7 +256,7 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         # Set the state.
         parser.set_state(new_state)
 
-        # Read and verify 5 particles.
+        # Read and verify 5 records (10 particles).
         number_expected_results = NUM_REC_SET_STATE
         result = parser.get_records(number_expected_results)
         self.assert_particles(result, YAML_FILE_SET_STATE3, RESOURCE_PATH)
