@@ -1,0 +1,95 @@
+header:
+  particle_object: MULTIPLE
+  particle_type: MULTIPLE
+
+data:
+  - _index:  1
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 415721
+    conductivity: 694343
+    pressure: 555128
+    pressure_temp: 18118
+    ctd_time: 437434873
+    internal_timestamp: 3593108473
+  - _index:  2
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 415910
+    conductivity: 694343
+    pressure: 555128
+    pressure_temp: 18115
+    ctd_time: 437434883
+    internal_timestamp: 3593108483
+  - _index:  3
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 417920
+    conductivity: 694342
+    pressure: 555123
+    pressure_temp: 18094
+    ctd_time: 437435047
+    internal_timestamp: 3593108647
+  - _index:  4
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 418039
+    conductivity: 694343
+    pressure: 555129
+    pressure_temp: 18091
+    ctd_time: 437435056
+    internal_timestamp: 3593108656
+  - _index:  5
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 418102
+    conductivity: 694344
+    pressure: 555125
+    pressure_temp: 18085
+    ctd_time: 437435066
+    internal_timestamp: 3593108666
+  - _index:  6
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 418149
+    conductivity: 694344
+    pressure: 555129
+    pressure_temp: 18082
+    ctd_time: 437435076
+    internal_timestamp: 3593108676
+  - _index:  7
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 418279
+    conductivity: 694345
+    pressure: 555129
+    pressure_temp: 18080
+    ctd_time: 437435086
+    internal_timestamp: 3593108686
+  - _index:  8
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 418344
+    conductivity: 694344
+    pressure: 555130
+    pressure_temp: 18075
+    ctd_time: 437435096
+    internal_timestamp: 3593108696
+  - _index:  9
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 420077
+    conductivity: 694343
+    pressure: 555124
+    pressure_temp: 18049
+    ctd_time: 437435346
+    internal_timestamp: 3593108946
+  - _index:  10
+    particle_object: CtdbpCdefCpInstrumentDataParticle
+    particle_type: ctdbp_cdef_cp_instrument_recovered
+    temperature: 420149
+    conductivity: 694344
+    pressure: 555128
+    pressure_temp: 18041
+    ctd_time: 437435354
+    internal_timestamp: 3593108954

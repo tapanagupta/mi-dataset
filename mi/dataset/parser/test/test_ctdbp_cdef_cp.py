@@ -21,20 +21,17 @@ RESOURCE_PATH = os.path.join(Config().base_dir(), 'mi', 'dataset', 'driver',
 
 MODULE_NAME = 'mi.dataset.parser.ctdbp_cdef_cp'
 
-SIMPLE_LOG_FILE = "simple_test.log"
-SIMPLE_LOG_FILE_META = "simple_test_meta.log"
 RAW_INPUT_DATA_1 = "raw_input1.log"
 EXTRACTED_DATA_FILE = "extracted_data.log"
 INVALID_DATA_FILE = "invalid_data.log"
 NO_SENSOR_DATA_FILE = "no_sensor_data.log"
-RECORDS_FILE_24  = "data2.log"
-RECORDS_FILE_20  = "data3.log"
+RECORDS_FILE_30  = "data2.log"
+RECORDS_FILE_SET_STATE  = "data3.log"
 DATA_FILE_1 = "data1.log"
 
 # Define number of expected records/exceptions for various tests
-NUM_REC_SIMPLE_LOG_FILE = 5
 NUM_REC_DATA_FILE1 = 100
-NUM_REC_MID_START = 20
+NUM_REC_MID_START = 15
 NUM_REC_SET_STATE = 10
 NUM_INVALID_EXCEPTIONS = 7
 
@@ -98,41 +95,6 @@ class CtdbpCdefCpParserUnitTestCase(ParserUnitTestCase):
             self.rec_pub_callback, self.rec_exception_callback, CtdbpCdefCpInstrumentDataParticle)
         return parser
 
-    # def test_verify_record(self):
-    #     """
-    #     Simple test to verify that records are successfully read and parsed from a data file
-    #     """
-    #     log.debug('===== START SIMPLE TEST =====')
-    #     in_file = self.open_file(SIMPLE_LOG_FILE)
-    #     parser = self.create_rec_parser(in_file)
-    #
-    #     # In a single read, get all particles in this file.
-    #     number_expected_results = NUM_REC_SIMPLE_LOG_FILE
-    #     result = parser.get_records(number_expected_results)
-    #     self.assertEqual(len(result), number_expected_results)
-    #
-    #     in_file.close()
-    #     self.assertEqual(self.rec_exception_callback_value, None)
-    #
-    #     log.debug('===== END SIMPLE TEST =====')
-    #
-    # def test_verify_record_with_metadata(self):
-    #     """
-    #     Test that metadata lines are ignored and data particles are generated for all records
-    #     """
-    #     log.debug('===== START META TEST =====')
-    #     in_file = self.open_file(SIMPLE_LOG_FILE_META)
-    #     parser = self.create_rec_parser(in_file)
-    #
-    #     # In a single read, get all particles in this file.
-    #     number_expected_results = NUM_REC_SIMPLE_LOG_FILE
-    #     result = parser.get_records(number_expected_results)
-    #     self.assertEqual(len(result), number_expected_results)
-    #
-    #     in_file.close()
-    #     self.assertEqual(self.rec_exception_callback_value, None)
-    #
-    #     log.debug('===== END META TEST =====')
 
     def test_verify_record_against_yaml(self):
         """
@@ -199,11 +161,11 @@ class CtdbpCdefCpParserUnitTestCase(ParserUnitTestCase):
         """
         log.debug('===== START TEST MID-STATE START RECOVERED =====')
 
-        in_file = self.open_file(RECORDS_FILE_24)
+        in_file = self.open_file(RECORDS_FILE_30)
 
-        # Start at the beginning of record 15 (of 40 total)
+        # Start at the beginning of record 15 (of 24 total)
         initial_state = {
-            CtdbpStateKey.POSITION: 679
+            CtdbpStateKey.POSITION: 548
         }
 
         parser = self.create_rec_parser(in_file, new_state=initial_state)
@@ -227,36 +189,36 @@ class CtdbpCdefCpParserUnitTestCase(ParserUnitTestCase):
         """
         log.debug('===== START TEST SET STATE RECOVERED =====')
 
-        in_file = self.open_file(RECORDS_FILE_20)
+        in_file = self.open_file(RECORDS_FILE_SET_STATE)
         parser = self.create_rec_parser(in_file)
 
-        # Get the first 5 particles in this file
+        # Get the first 10 particles in this file
         number_expected_results = NUM_REC_SET_STATE
         result = parser.get_records(number_expected_results)
         self.assert_particles(result, YAML_FILE_SET_STATE1, RESOURCE_PATH)
 
-        # Skip ahead in the file so that we get the last 5 particles.
+        # Skip ahead in the file so that we get the last 10 particles.
         new_state = {
-            CtdbpStateKey.POSITION: 555
+            CtdbpStateKey.POSITION: 620
         }
 
         # Set the state.
         parser.set_state(new_state)
 
-        # Read and verify the last 5 particles.
+        # Read and verify the last 10 particles.
         number_expected_results = NUM_REC_SET_STATE
         result = parser.get_records(number_expected_results)
         self.assert_particles(result, YAML_FILE_SET_STATE2, RESOURCE_PATH)
 
-        # Skip back in the file so that we get 5 particles prior to the last 5.
+        # Skip back in the file so that we get 10 particles prior to the last 10.
         new_state = {
-            CtdbpStateKey.POSITION: 370
+            CtdbpStateKey.POSITION: 310
         }
 
         # Set the state.
         parser.set_state(new_state)
 
-        # Read and verify 5 particles.
+        # Read and verify 10 particles.
         number_expected_results = NUM_REC_SET_STATE
         result = parser.get_records(number_expected_results)
         self.assert_particles(result, YAML_FILE_SET_STATE3, RESOURCE_PATH)
