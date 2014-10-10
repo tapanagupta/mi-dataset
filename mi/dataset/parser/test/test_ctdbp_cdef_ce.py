@@ -95,7 +95,7 @@ class CtdbpCdefCeParserUnitTestCase(ParserUnitTestCase):
         """
         parser = CtdbpCdefCeParser(self.rec_config,
             file_handle, new_state, self.rec_state_callback,
-            self.rec_pub_callback, self.rec_exception_callback, CtdbpCdefCeInstrumentDataParticle)
+            self.rec_pub_callback, self.rec_exception_callback) #, CtdbpCdefCeInstrumentDataParticle)
         return parser
 
     def test_verify_record(self):
