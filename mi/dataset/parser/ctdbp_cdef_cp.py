@@ -149,7 +149,7 @@ class CtdbpCdefCpParser(BufferLoadingParser):
                  state_callback,
                  publish_callback,
                  exception_callback,
-                 particle_class,
+                 #particle_class,
                  *args, **kwargs):
 
         # No fancy sieve function needed for this parser.
@@ -170,7 +170,7 @@ class CtdbpCdefCpParser(BufferLoadingParser):
 
         self._read_state = {CtdbpStateKey.POSITION: 0}
         self.input_file = stream_handle
-        self.particle_class = particle_class
+        #self.particle_class = particle_class
 
         # If there's an existing state, update to it.
 
@@ -224,7 +224,8 @@ class CtdbpCdefCpParser(BufferLoadingParser):
 
                 log.debug("Sensor match found!")
 
-                particle = self._extract_sample(self.particle_class,
+                #self.particle_class = CtdbpCdefCpInstrumentDataParticle
+                particle = self._extract_sample(CtdbpCdefCpInstrumentDataParticle,
                                                 None,
                                                 chunk,
                                                 None)
