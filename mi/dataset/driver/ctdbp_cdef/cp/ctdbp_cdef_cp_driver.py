@@ -17,7 +17,7 @@ def parse(basePythonCodePath, sourceFilePath, particleDataHdlrObj):
             None,
             state_callback,
             pub_callback,
-            exception_callback);
+            exception_callback)
         driver = DataSetDriver(parser, particleDataHdlrObj)
         driver.processFileStream()
     return particleDataHdlrObj

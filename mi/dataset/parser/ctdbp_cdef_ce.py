@@ -292,8 +292,8 @@ class CtdbpCdefCeParser(BufferLoadingParser):
                 #log.debug("Sensor match found!")
 
                 # First extract the ctdbp_cdef_ce_instrument_recovered particle
-                self.particle_class = CtdbpCdefCeInstrumentDataParticle
-                data_particle = self._extract_sample(self.particle_class,
+                #self.particle_class = CtdbpCdefCeInstrumentDataParticle
+                data_particle = self._extract_sample(CtdbpCdefCeInstrumentDataParticle,
                                                 None,
                                                 chunk,
                                                 None)
@@ -303,8 +303,8 @@ class CtdbpCdefCeParser(BufferLoadingParser):
                     result_particles.append((data_particle, copy.copy(self._read_state)))
 
                 # Then extract the ctdbp_cdef_ce_dosta_recovered particle
-                self.particle_class = CtdbpCdefCeDostaDataParticle
-                dosta_particle = self._extract_sample(self.particle_class,
+                #self.particle_class = CtdbpCdefCeDostaDataParticle
+                dosta_particle = self._extract_sample(CtdbpCdefCeDostaDataParticle,
                                                 None,
                                                 chunk,
                                                 None)
