@@ -1,3 +1,32 @@
+#!/usr/bin/env python
+
+"""
+@package mi.dataset.parser.test
+@file marine-integrations/mi/dataset/parser/test/test_ctdbp_cdef_ce.py
+@author Tapana Gupta
+@brief Test code for ctdbp_cdef_ce data parser
+
+Files used for testing:
+
+simple_test.log
+  Contains a line of Metadata + 5 Sensor records
+
+simple_test_meta.log
+  Contains complete Metadata + 5 Sensor records
+
+data1.log
+  Contains complete Metadata + 143 Sensor records
+  Contents identical to ctdbp_with_dosta_09_12_14.hex (from IDD page)
+
+invalid_data.log
+  Contains 7 lines of invalid data
+
+no_sensor_data.log
+  Contains a section of metadata and no sensor records
+
+"""
+
+
 import unittest
 import os
 from nose.plugins.attrib import attr
@@ -24,22 +53,14 @@ RAW_INPUT_DATA_1 = "raw_input1.log"
 EXTRACTED_DATA_FILE = "extracted_data.log"
 INVALID_DATA_FILE = "invalid_data.log"
 NO_SENSOR_DATA_FILE = "no_sensor_data.log"
-RECORDS_FILE_24  = "data2.log"
-RECORDS_FILE_20  = "data3.log"
 DATA_FILE_1 = "data1.log"
 
 # Define number of expected records/exceptions for various tests
 NUM_REC_SIMPLE_LOG_FILE = 5
 NUM_REC_DATA_FILE1 = 286
-NUM_REC_MID_START = 20
-NUM_REC_SET_STATE = 10
 NUM_INVALID_EXCEPTIONS = 7
 
 YAML_FILE = "data1.yml"
-YAML_FILE_MID_START = "data_mid.yml"
-YAML_FILE_SET_STATE1= "data_set_state1.yml"
-YAML_FILE_SET_STATE2= "data_set_state2.yml"
-YAML_FILE_SET_STATE3= "data_set_state3.yml"
 
 
 @attr('UNIT', group='mi')
